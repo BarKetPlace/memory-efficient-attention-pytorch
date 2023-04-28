@@ -62,7 +62,7 @@ def summarize_qkv_chunk(q, k, v, mask, attn_bias_chunk, causal, qk_start_indices
 
     if exists(mask):
         # That's probably wrong
-        mask = rearrange(mask, 'i j -> b 1 i j')
+        mask = rearrange(mask, 'b i j -> b 1 i j')
         weight = weight.masked_fill(~mask, mask_value)
 
     if causal and q_start_index < (k_start_index + k_chunk_size - 1):
@@ -106,7 +106,7 @@ def memory_efficient_attention(
     q_chunks = q.split(q_bucket_size, dim = -2)
     k_chunks = k.split(k_bucket_size, dim = -2)
     v_chunks = v.split(k_bucket_size, dim = -2)
-    mask_q_chunks = mask.split(q_bucket_size, dim = -2) if exists(mask) else ((None,) * len(q_chunks))
+    mask_q_chunks = mask.unsqueeze(0).split(q_bucket_size, dim = -2) if exists(mask) else ((None,) * len(q_chunks))
 
     if exists(attn_bias):
         i, j = attn_bias.shape[-2:]
