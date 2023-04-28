@@ -106,7 +106,7 @@ def memory_efficient_attention(
     q_chunks = q.split(q_bucket_size, dim = -2)
     k_chunks = k.split(k_bucket_size, dim = -2)
     v_chunks = v.split(k_bucket_size, dim = -2)
-    mask_chunks = mask.split(k_bucket_size, dim = -1) if exists(mask) else ((None,) * len(k_chunks))
+    mask_q_chunks = mask.split(q_bucket_size, dim = -2) if exists(mask) else ((None,) * len(q_chunks))
 
     if exists(attn_bias):
         i, j = attn_bias.shape[-2:]
@@ -116,11 +116,11 @@ def memory_efficient_attention(
     # loop through all chunks and accumulate
 
     out = []
-    for q_index, q_chunk in enumerate(q_chunks):
+    for q_index, (q_chunk,mask_q_chunk) in enumerate(zip(q_chunks,mask_q_chunks)):
         exp_weights = []
         weighted_values = []
         weight_maxes = []
-
+        mask_chunks = mask_q_chunks.split(k_bucket_size,dim=-1) 
         for k_index, (k_chunk, v_chunk, mask_chunk) in enumerate(zip(k_chunks, v_chunks, mask_chunks)):
             q_start_index = q_index * q_bucket_size
             k_start_index = k_index * k_bucket_size
