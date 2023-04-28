@@ -61,6 +61,7 @@ def summarize_qkv_chunk(q, k, v, mask, attn_bias_chunk, causal, qk_start_indices
     mask_value = -torch.finfo(weight.dtype).max
 
     if exists(mask):
+        # That's probably wrong
         mask = rearrange(mask, 'b j -> b 1 1 j')
         weight = weight.masked_fill(~mask, mask_value)
 
