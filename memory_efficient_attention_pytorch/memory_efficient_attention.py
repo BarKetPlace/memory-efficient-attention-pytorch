@@ -62,7 +62,7 @@ def summarize_qkv_chunk(q, k, v, mask, attn_bias_chunk, causal, qk_start_indices
 
     if exists(mask):
         # That's probably wrong
-        mask = rearrange(mask, 'b j -> b 1 1 j')
+        mask = rearrange(mask, 'i j -> b 1 i j')
         weight = weight.masked_fill(~mask, mask_value)
 
     if causal and q_start_index < (k_start_index + k_chunk_size - 1):
