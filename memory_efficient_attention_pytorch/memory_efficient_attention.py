@@ -127,7 +127,11 @@ def memory_efficient_attention(
         mask_k_chunks = mask[1].split(k_bucket_size,dim=1) if exists(mask) else ((None,) * len(k_chunks))
 
         for k_index, (k_chunk, v_chunk, mask_k_chunk) in enumerate(zip(k_chunks, v_chunks, mask_k_chunks)):
-            mask_chunk = mask_q_chunk > mask_k_chunk
+            if exists(mask):
+                mask_chunk = mask_q_chunk > mask_k_chunk
+                mask_chunk = mask_chunk.unsqueeze(0)
+            else:
+                mask_chunk = None
             q_start_index = q_index * q_bucket_size
             k_start_index = k_index * k_bucket_size
 
@@ -141,7 +145,7 @@ def memory_efficient_attention(
                 q_chunk,
                 k_chunk,
                 v_chunk,
-                mask_chunk.unsqueeze(0),
+                mask_chunk,
                 attn_bias_chunk,
                 causal,
                 (q_start_index, k_start_index),
